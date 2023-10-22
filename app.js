@@ -5,12 +5,12 @@ const { errors } = require('celebrate');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const NotFoundError = require('./errors/not-found-err');
 
-const auth = require('./middlewares/auth');
+const router = require('./routes/index');
+
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, MONGODB_URL = 'mongodb://127.0.0.1:27017/bitfilmsdb' } = process.env;
 
 const app = express();
 
@@ -26,7 +26,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb', {
+mongoose.connect(MONGODB_URL, {
   useNewUrlParser: true,
 });
 
@@ -34,23 +34,7 @@ app.use(requestLogger); // подключаем логгер запросов
 
 app.use(limiter);
 
-// app.get('/crash-test', () => {
-//   setTimeout(() => {
-//     throw new Error('Сервер сейчас упадёт');
-//   }, 0);
-// });
-
-app.use('/', require('./routes/signup'));
-app.use('/', require('./routes/signin'));
-
-app.use(auth);
-
-app.use('/users', require('./routes/users'));
-app.use('/movies', require('./routes/movies'));
-
-app.use('*', (req, res, next) => {
-  next(new NotFoundError('Страницы не существует'));
-});
+app.use(router);
 
 app.use(errorLogger);
 

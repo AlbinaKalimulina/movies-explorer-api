@@ -12,7 +12,7 @@ router.get('/me', getUsersMe);
 // обновляет информацию о пользователе (email и имя)
 router.patch('/me', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string().min(2).max(30).required(),
     email: Joi
       .string()
       .pattern(emailRegex),
